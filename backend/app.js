@@ -8,7 +8,6 @@ const crypto = require("crypto");
 const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
-const authMiddleware = require("./auth");
 app.use(cors())
 app.use(express.json());
 
