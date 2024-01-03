@@ -66,7 +66,9 @@ export default   function FilesListComp (props: FilesListCompProps){
                     <td>
                         {docs.original_name}
                     </td>
-                   
+                    <td>
+                        {docs.user_name}
+                    </td>
                 </tr>
             ))}
 

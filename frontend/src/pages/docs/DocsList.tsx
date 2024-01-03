@@ -86,6 +86,9 @@ export default function DocsList () {
                 formData.append("files", files.files[i]);
             }
             formData.append('document_id', "0");
+            if (userId !== null){
+                formData.append('owner_id', userId.toString());
+            }
             if (token){
                 fetch("http://10.5.0.5:3000/addFile", {
                     method: 'POST',
@@ -136,7 +139,9 @@ export default function DocsList () {
                                 <th>
                                 Nome
                                 </th>
-                            
+                                <th>
+                                Autor
+                                </th>
                             </tr>
                         </thead>
 

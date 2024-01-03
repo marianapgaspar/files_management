@@ -25,7 +25,7 @@ export default function GuestsDocsFormComp (props: GuestsDocsProp) {
         }
         
     }, [])
-    const addUser = () => {
+    const addGuest = () => {
         if (!userPermission){
             setAnswer("Favor preencher todos os campos");
             return
@@ -84,7 +84,7 @@ export default function GuestsDocsFormComp (props: GuestsDocsProp) {
                     
                     <div className="card-footer" style={{marginTop: "15px"}}>
                         <div className="row justify-content-center"></div>
-                        <button className="btn btn-success" style={{margin: "15px"}} onClick={() => addUser()}>Salvar</button>
+                        <button className="btn btn-success" style={{margin: "15px"}} onClick={() => addGuest()}>Salvar</button>
                     </div>
                 </div>
             </div>

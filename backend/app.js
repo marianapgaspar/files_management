@@ -115,15 +115,15 @@ function verifyJAuth(req, res, next){
 // ------------ DOCUMENTS ---------------
     app.get('/getDocs', verifyJAuth, async (req, res) => {
         if (req.query.creator != 0){
-            await db.raw("select d.* from documents d where father_id is null and owner_id = "+req.query.creator).then(function(result){
+            await db.raw("select d.*, u.name AS user_name from documents d inner join users u on u.id = d.owner_id where father_id is null and owner_id = "+req.query.creator).then(function(result){
                 res.json(result.rows)
             })
         } else if (req.query.guest != 0){
-            await db.raw("select d.* from documents d inner join document_guests dg on dg.document_id = d.id where dg.guest_id = "+req.query.guest+" and father_id is null").then(function(result){
+            await db.raw("select d.*, u.name AS user_name from documents d inner join users u on u.id = d.owner_id inner join document_guests dg on dg.document_id = d.id where dg.guest_id = "+req.query.guest+" and father_id is null").then(function(result){
                 res.json(result.rows)
             })
         } else {
-            await db.raw("select d.* from documents d where father_id is null").then(function(result){
+            await db.raw("select d.*, u.name AS user_name from documents d inner join users u on u.id = d.owner_id where father_id is null").then(function(result){
                 res.json(result.rows)
             })
         }
@@ -160,15 +160,15 @@ function verifyJAuth(req, res, next){
     });
     app.get('/getDocsByFather', verifyJAuth, async (req, res) => {
         if (req.query.creator != 0){
-            await db.raw("select * from documents where father_id = "+req.query.father_id+" and owner_id = "+req.query.creator).then(function(result){
+            await db.raw("select d.*, u.name AS user_name from documents d inner join users u on u.id = d.owner_id where father_id = "+req.query.father_id+" and owner_id = "+req.query.creator).then(function(result){
                 res.json(result.rows)
             })
         } else if (req.query.guest != 0){
-            await db.raw("select d.*, dg.* from documents d inner join document_guests dg on dg.document_id = d.id where dg.guest_id = "+req.query.guest+" and father_id = "+req.query.father_id).then(function(result){
+            await db.raw("select d.*, dg.*, u.name AS user_name from documents d inner join users u on u.id = d.owner_id inner join document_guests dg on dg.document_id = d.id where dg.guest_id = "+req.query.guest+" and father_id = "+req.query.father_id).then(function(result){
                 res.json(result.rows)
             })
         } else {
-            await db.raw("select * from documents where father_id = "+req.query.father_id).then(function(result){
+            await db.raw("select d.*, u.name AS user_name from documents d inner join users u on u.id = d.owner_id where father_id = "+req.query.father_id).then(function(result){
                 res.json(result.rows)
             })
         }
@@ -178,7 +178,11 @@ function verifyJAuth(req, res, next){
             res.json(result.rows[0])
         })
     });
-    
+    app.get('/getDocById', verifyJAuth, async (req, res) => {
+        await db.raw("select * from documents where id = "+req.query.id).then(function(result){
+            res.json(result.rows[0])
+        })
+    });
 
 // ------------ GUESTS ---------------
     app.get('/getGuestsByDocs', verifyJAuth, async (req, res) => {
@@ -226,9 +230,9 @@ function verifyJAuth(req, res, next){
         const newName = crypto.randomBytes(16).toString("hex") + extension;
         const newFilePath = path.join(__dirname, 'uploads', newName)
 
-        var newFileDb = {original_name: req.file.originalname, name:newName}
+        var newFileDb = {original_name: req.file.originalname, name:newName, owner_id: req.body.owner_id}
         if (req.body.document_id > 0){
-            var newFileDb = {document_id: req.body.document_id, original_name: req.file.originalname, name:newName}
+            var newFileDb = {document_id: req.body.document_id, original_name: req.file.originalname, name:newName, owner_id: req.body.owner_id}
         }
 
         fs.rename(req.file.path, newFilePath, function (err) {
@@ -247,12 +251,16 @@ function verifyJAuth(req, res, next){
         })
     });
     app.get('/getFiles', verifyJAuth, async (req, res) => {
-        const files = await db.select().from('files').whereNull("document_id").orderBy("id");
-        res.json(files)
+        await db.raw("select f.*, u.name AS user_name from files f inner join users u on u.id = f.owner_id order by id asc").then(function(result){
+            res.json(result.rows)
+        })
     });
     app.get('/getFilesByDoc', verifyJAuth, async (req, res) => {
-        const files = await db.select().from('files').where("document_id", req.query.document_id).orderBy("id");
-        res.json(files)
+        await db.raw("select f.*, u.name AS user_name from files f inner join users u on u.id = f.owner_id WHERE f.document_id = "+req.query.document_id+" order by id asc").then(function(result){
+            res.json(result.rows)
+        })
+        // const files = await db.select().from('files').where("document_id", req.query.document_id).orderBy("id");
+        // res.json(files)
     });
     app.post('/deleteFile', verifyJAuth, async (req, res) => {
         const pathFile = path.join(__dirname, 'uploads', req.body.name);

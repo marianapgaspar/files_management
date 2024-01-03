@@ -15,6 +15,7 @@ export default function DocsListChild () {
     const {id} = useParams<DocsListChildParams>();
     const [dataDocs, setDataDocs] = useState([]);
     const [dataFiles, setDataFiles] = useState([]);
+    const [doc, setDoc] = useState({});
   
     const [showInsert, setShowInsert] = useState(false);
     const handleCloseInsert = () => setShowInsert(false);
@@ -67,6 +68,9 @@ export default function DocsListChild () {
             if (id !== undefined){
                 formData.append('document_id', id);
             }
+            if (userId !== null){
+                formData.append('owner_id', userId.toString());
+            }
             if (token){
                 fetch("http://10.5.0.5:3000/addFile", {
                     method: 'POST',
@@ -88,6 +92,15 @@ export default function DocsListChild () {
             const headers = {'Authorization': token}
             const guest = (permission == "0" ? userId : 0)
             const creator = permission == "1" ? userId : 0
+
+            fetch("http://10.5.0.5:3000/getDocById?id="+id,{headers})
+            .then((response) => response.json())
+            .then((json)=>{
+                setTimeout(()=>{
+                    setDoc(json)
+                    
+                },1000)
+            });
 
             fetch("http://10.5.0.5:3000/getDocsByFather?father_id="+id+"&creator="+creator+"&guest="+guest,{headers})
             .then((response) => response.json())
@@ -129,7 +142,7 @@ export default function DocsListChild () {
             {/* --------------------- LISTAS DE ARQUIVOS NA PASTA  -------------------------- */}
             <div className='container-xxl bd-gutter mt-3 my-md-4 bd-layout'>
                     <div className="pd-x-20 pd-sm-x-50 pd-t-20 pd-sm-t-15">
-                        <h4 className="tx-gray-800 mg-b-5">Documentos</h4>
+                        <h4 className="tx-gray-800 mg-b-5">Documentos <i className="fa-solid fa-arrow-right"></i> {doc.name}</h4>
                     </div>
                 <div className="card">
                     <div className="bd bd-gray-300 rounded table-responsive">
@@ -158,7 +171,9 @@ export default function DocsListChild () {
                                     <th>
                                     Nome
                                     </th>
-                                
+                                    <th>
+                                    Autor
+                                    </th>
                                 </tr>
                             </thead>
 

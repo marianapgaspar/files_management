@@ -70,7 +70,9 @@ export default   function DocsListComp (props: DocsListCompProps){
                     <td>
                         {docs.name}
                     </td>
-                   
+                    <td>
+                        {docs.user_name}
+                    </td>
                 </tr>
             ))}
 
